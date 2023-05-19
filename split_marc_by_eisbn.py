@@ -21,23 +21,35 @@ for marc_file in os.listdir(files_loc):
         marc_file_loc = os.path.join(files_loc,marc_file)
         # open marc file
         with open(marc_file_loc, 'rb') as file:
-            reader = pymarc.MARCReader(file)
+            reader = pymarc.MARCReader(file, to_unicode=True, force_utf8=True)
             for record in reader:
                 try:
-                    eisbn_field = (record['020']['a'])
-                    eisbn_pattern = re.search(r"978\d{10}",eisbn_field)
+                    eisbn_field = record['020']['a']
+                    eisbn_pattern = re.search(r"978\d{10}", eisbn_field)
                     output_file_name = str(eisbn_pattern.group()) + ".mrc"
                     output_file_loc = os.path.join(files_loc, output_file_name)
                     
                 except TypeError as e:
-                    print(f"Type Error wih {record}\nError message: {e}") 
+                    print(f"Type Error wih {record}\nError message: {e}")
                     # count error
                     error_count += 1
                     continue
+                except UnicodeEncodeError as e:
+                    print(f"Unicode Error wih {record}\nError message: {e}")
+                    # count error
+                    error_count += 1
+                    continue
+
                 # count success
                 success_count += 1
                 with open(output_file_loc, 'wb') as out:
-                    out.write(record.as_marc())
-                
+                    try:
+                        out.write(record.as_marc())
+                    except UnicodeEncodeError as e:
+                        print(f"Unicode Error wih {record}\nError message: {e}")
+                        # count error
+                        error_count += 1
+                        continue
+
 print(f"Total error count: {error_count}")
 print(f"total files split: {success_count}")      
