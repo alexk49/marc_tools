@@ -4,7 +4,9 @@
 param(
     [Parameter(Mandatory)]
     [String]$old,
+    [Parameter(Mandatory)]
     [String]$new,
+    [Parameter(Mandatory)]
     [String]$path
     )
 
